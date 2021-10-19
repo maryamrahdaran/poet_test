@@ -10,8 +10,8 @@ import test100
 from test100 import main
 
 
-@patch("test10.main.csv.DictWriter.writerow")
-@patch("test10.main.csv.DictWriter.writeheader")
+@patch("test100.main.csv.DictWriter.writerow")
+@patch("test100.main.csv.DictWriter.writeheader")
 def test_write_csv(mock_header, mock_row):
     """
     mock write_to_file
@@ -19,7 +19,7 @@ def test_write_csv(mock_header, mock_row):
     :param mock_row:
     :return:
     """
-    with patch("test10.main.open") as mocked_open:
+    with patch("test100.main.open") as mocked_open:
         r = StringIO()
         mocked_open.return_value = r
         main.write_to_file.run(
@@ -43,10 +43,12 @@ def test_write_csv(mock_header, mock_row):
         assert mock_row.call_count == 2
         # print(r.read())
 
-#error!
+
+# error!
+
 
 def test_read_from_file():
-    with patch("test10.main.open") as mocked_open:
+    with patch("test100.main.open") as mocked_open:
         mocked_open.return_value = StringIO("col1\n" "1\n")
         assert main.read_from_file.run("t") == [{"col1": "1"}]
 
@@ -57,7 +59,6 @@ def test_read_from_file2(mocker):
     mocked_open.return_value = StringIO("col1\n" "1\n")
     assert main.read_from_file.run("t") == [{"col1": "1"}]
 """
-
 
 
 class TestReadFromCsv:

@@ -6,6 +6,9 @@ authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+prefect = {extras = ["viz"], version = "^0.15.6"}
+black = "^21.9b0"
+mock = "^4.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
