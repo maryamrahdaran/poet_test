@@ -15,14 +15,9 @@ def genre_count(genres):
         return len(glist)
 
 
-# make a list of genre dictionary for each line: {genres: count}, if the key(genre) already exists add 1 to its count, otherwise add the key with the count 1 to the dictionary
-# argument: a line of file(line), a dictionary(dict_genre) to be made
-# return: nothing
-
-
 def make_genre_dict(line, dict_genre):
     """
-    this function make a list of genre dictionary for each line: {genres: count}, if the key(genre) already exists add 1 to its count, otherwise add the key with the count 1 to the dictionary
+    this function make a list of genre dictionary for each line
     :param line: a line of file(line)
     :param dict_genre:
     :return: nothing
