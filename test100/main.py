@@ -1,4 +1,5 @@
-from prefect import task, Flow, Parameter
+from prefect import task, Flow, Parameter, context
+from collections import defaultdict
 import csv
 
 
@@ -8,26 +9,40 @@ def genre_count(genres):
     :param genres: genres. | separated
     :return: int
     """
-    glist = genres.split("|")
-    if glist[0] == "(no genres listed)":
+    genre_list = genres.split("|")  # TODO rename
+    if genre_list[0] == "(no genres listed)":
         return 0
     else:
-        return len(glist)
+        return len(genre_list)
 
 
-def make_genre_dict(line, dict_genre):
+def make_genre_dict(reader):
     """
-    this function make a list of genre dictionary for each line
-    :param line: a line of file(line)
-    :param dict_genre:
-    :return: nothing
+    this function make a list of key=genres and values=count, add the new column "genre_count", and count the number of
+    lines in the file and sum the total genres in the file for calculating average
+    with new added column
+    :param reader: a list of dictionary
+    :return: tuple( a dict, new list of dict with added new column, number of lines, total number of genres)
     """
-    glist = line["genres"].split("|")
-    for g in glist:
-        if g in dict_genre:
-            dict_genre[g] = dict_genre[g] + 1
-        else:
-            dict_genre[g] = 1
+    sum_genre_count = 0
+    num_lines = 0
+    movie_list = []
+
+    dict_genre = defaultdict(int)  # TODO default dict
+    for line in reader:
+        movie_list.append(line)
+        genre_list = line["genres"].split("|")
+        for genre in genre_list:
+            dict_genre[genre] = dict_genre[genre] + 1
+
+        # add the new count field to dictionary
+        count = genre_count(line["genres"])
+        movie_list[-1]["genre_count"] = count
+
+        # for calculating average
+        sum_genre_count += count
+        num_lines += 1
+    return dict_genre, movie_list, num_lines, sum_genre_count
 
 
 def find_max(dict_genre):
@@ -53,7 +68,6 @@ def read_from_file(input_file):
     :return: list
     """
     with open(input_file, mode="r") as readFile:
-        print(type(readFile))
         reader = csv.DictReader(readFile)
         return list(reader)
 
@@ -65,34 +79,23 @@ def add_genre_count(reader):
     :param reader: list of dictionary
     :return: list of dictionary
     """
-    num_lines = 0
-    sum_genre_count = 0
-    dict_genre = {}
-
-    for line in reader:
-        # make the dictionary of genres
-        make_genre_dict(line, dict_genre)
-
-        # add the new count field to dictionary
-        count = genre_count(line["genres"])
-        line["genre_count"] = count
-
-        # for calculating average
-        sum_genre_count += count
-        num_lines += 1
+    dict_genre, movie_list, num_lines, sum_genre_count = make_genre_dict(reader)  # TODO
 
     # find the most genre
     max_genre = find_max(dict_genre)
-    print("Average is: {}".format(sum_genre_count / num_lines))
-    print("most common genre is {} with {} count.".format(max_genre[0], max_genre[1]))
-    return reader
+    logger = context.get("logger")
+    logger.info(
+        f"Average is: {sum_genre_count / num_lines}"
+    )  # TODO change to prefect logging
+    logger.info(f"most common genre is {max_genre[0]} with {max_genre[1]} count.")
+    return movie_list
 
 
 @task
-def write_to_file(transform, output_file):
+def write_to_file(movie_list, output_file):  # TODO change arg and comments
     """
     this function write the list of dictionary to a csv file
-    :param transform: list of dictionary
+    :param movie_list: list of dictionary
     :param output_file: file to be written
     :return: nothing
     """
@@ -103,16 +106,16 @@ def write_to_file(transform, output_file):
 
         writer.writeheader()
 
-        for line in transform:
+        for line in movie_list:
             writer.writerow(line)
 
 
 with Flow("ETL") as flow:
-    input_file = Parameter("input_file", default="test10/movies.csv")
+    input_file = Parameter("input_file", default="test100/movies.csv")
     output_file = Parameter("output_file", default="movie_enhanced.csv")
     reader = read_from_file(input_file)
-    transform = add_genre_count(reader)
-    write_to_file(transform, output_file)
+    movie_list = add_genre_count(reader)
+    write_to_file(movie_list, output_file)
 
 
 if __name__ == "__main__":

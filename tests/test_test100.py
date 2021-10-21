@@ -44,9 +44,6 @@ def test_write_csv(mock_header, mock_row):
         # print(r.read())
 
 
-# error!
-
-
 def test_read_from_file():
     with patch("test100.main.open") as mocked_open:
         mocked_open.return_value = StringIO("col1\n" "1\n")
@@ -55,7 +52,7 @@ def test_read_from_file():
 
 """
 def test_read_from_file2(mocker):
-    mocked_open = mocker.patch.object(test10.main, "open")
+    mocked_open = mocker.patch.object(test100.main, "open")
     mocked_open.return_value = StringIO("col1\n" "1\n")
     assert main.read_from_file.run("t") == [{"col1": "1"}]
 """
@@ -127,26 +124,51 @@ def test_genre_count(genre, expected):
 
 
 @pytest.mark.parametrize(
-    "line, dict_genre, expected",
+    "movie_list, expected",
     [
-        ({"genres": "comedy|drama|action"}, {}, {"comedy": 1, "drama": 1, "action": 1}),
         (
-            {"genres": "comedy|drama"},
-            {"comedy": 1, "action": 3},
-            {"comedy": 2, "drama": 1, "action": 3},
+            [{"genres": "comedy|drama|action"}],
+            (
+                {"comedy": 1, "drama": 1, "action": 1},
+                [{"genres": "comedy|drama|action", "genre_count": 3}],
+                1,
+                3,
+            ),
+        ),
+        (
+            [
+                {"genres": "comedy|horror|action"},
+                {"genres": "comedy|drama|action"},
+                {"genres": "(no genres listed)"},
+            ],
+            (
+                {
+                    "comedy": 2,
+                    "drama": 1,
+                    "action": 2,
+                    "horror": 1,
+                    "(no genres listed)": 1,
+                },
+                [
+                    {"genres": "comedy|horror|action", "genre_count": 3},
+                    {"genres": "comedy|drama|action", "genre_count": 3},
+                    {"genres": "(no genres listed)", "genre_count": 0},
+                ],
+                3,
+                6,
+            ),
         ),
     ],
 )
-def test_make_genre_dict(line, dict_genre, expected):
+def test_make_genre_dict(movie_list, expected):
     """
     mock make_genre_dict
-    :param line: string | separated
-    :param dict_genre: a dictionary
-    :param expected: expected result- dictionary
+    :param movie_list: list of dictionary containing movies
+    :param expected: expected result- (dic, list, int, int)
     :return:
     """
-    main.make_genre_dict(line, dict_genre)
-    assert dict_genre == expected
+
+    assert main.make_genre_dict(movie_list) == expected
 
 
 @pytest.mark.parametrize(
