@@ -1,5 +1,6 @@
-from prefect import task, Flow, Parameter, context
+from prefect import task, Flow, Parameter
 from collections import defaultdict
+import prefect
 import csv
 
 
@@ -83,7 +84,7 @@ def add_genre_count(reader):
 
     # find the most genre
     max_genre = find_max(dict_genre)
-    logger = context.get("logger")
+    logger = prefect.context.get("logger")
     logger.info(
         f"Average is: {sum_genre_count / num_lines}"
     )  # TODO change to prefect logging
