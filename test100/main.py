@@ -19,11 +19,10 @@ def genre_count(genres):
 
 def make_genre_dict(reader):
     """
-    this function make a list of key=genres and values=count, add the new column "genre_count", and count the number of
-    lines in the file and sum the total genres in the file for calculating average
+    this function make a list of key=genres and values=count, add the new column "genre_count", and average
     with new added column
     :param reader: a list of dictionary
-    :return: tuple( a dict, new list of dict with added new column, number of lines, total number of genres)
+    :return: tuple( a dict, new list of dict with added new column, average)
     """
     sum_genre_count = 0
     num_lines = 0
@@ -43,7 +42,8 @@ def make_genre_dict(reader):
         # for calculating average
         sum_genre_count += count
         num_lines += 1
-    return dict_genre, movie_list, num_lines, sum_genre_count
+    average = sum_genre_count / num_lines
+    return dict_genre, movie_list, average
 
 
 def find_max(dict_genre):
@@ -80,14 +80,12 @@ def add_genre_count(reader):
     :param reader: list of dictionary
     :return: list of dictionary
     """
-    dict_genre, movie_list, num_lines, sum_genre_count = make_genre_dict(reader)  # TODO
+    dict_genre, movie_list, average = make_genre_dict(reader)  # TODO
 
     # find the most genre
     max_genre = find_max(dict_genre)
     logger = prefect.context.get("logger")
-    logger.info(
-        f"Average is: {sum_genre_count / num_lines}"
-    )  # TODO change to prefect logging
+    logger.info(f"Average is: {average}")  # TODO change to prefect logging
     logger.info(f"most common genre is {max_genre[0]} with {max_genre[1]} count.")
     return movie_list
 

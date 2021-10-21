@@ -131,8 +131,7 @@ def test_genre_count(genre, expected):
             (
                 {"comedy": 1, "drama": 1, "action": 1},
                 [{"genres": "comedy|drama|action", "genre_count": 3}],
-                1,
-                3,
+                3 / 1,
             ),
         ),
         (
@@ -154,8 +153,7 @@ def test_genre_count(genre, expected):
                     {"genres": "comedy|drama|action", "genre_count": 3},
                     {"genres": "(no genres listed)", "genre_count": 0},
                 ],
-                3,
-                6,
+                6 / 3,
             ),
         ),
     ],
@@ -164,7 +162,7 @@ def test_make_genre_dict(movie_list, expected):
     """
     mock make_genre_dict
     :param movie_list: list of dictionary containing movies
-    :param expected: expected result- (dic, list, int, int)
+    :param expected: expected result- (dic, list, int)
     :return:
     """
 
