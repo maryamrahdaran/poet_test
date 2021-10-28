@@ -1,23 +1,28 @@
+from typing import List, Dict
+
 from prefect import task, Flow, Parameter
 from collections import defaultdict
 import prefect
 import csv
 
 
-def genre_count(genres):
+def genre_count(genres: str) -> int:
     """
     this function counts the number of genres in the genre string
     :param genres: genres. | separated
     :return: int
     """
-    genre_list = genres.split("|")  # TODO rename
-    if genre_list[0] == "(no genres listed)":
-        return 0
+    if not isinstance(genres, str) or not genres:
+        raise Exception("empty list or | is not included")
     else:
-        return len(genre_list)
+        genre_list = genres.split("|")  # TODO rename
+        if genre_list[0] == "(no genres listed)":
+            return 0
+        else:
+            return len(genre_list)
 
 
-def make_genre_dict(reader):
+def make_genre_dict(reader: List[Dict]) -> tuple:
     """
     this function make a list of key=genres and values=count, add the new column "genre_count", and average
     with new added column
@@ -29,7 +34,11 @@ def make_genre_dict(reader):
     movie_list = []
 
     dict_genre = defaultdict(int)  # TODO default dict
+    if not isinstance(reader, list):
+        raise Exception("List IS empty")
     for line in reader:
+        if not isinstance(line, dict) or "genres" not in line.keys():
+            raise Exception("genres key is not present")
         movie_list.append(line)
         genre_list = line["genres"].split("|")
         for genre in genre_list:
@@ -46,7 +55,7 @@ def make_genre_dict(reader):
     return dict_genre, movie_list, average
 
 
-def find_max(dict_genre):
+def find_max(dict_genre: dict) -> tuple:
     """
     this function find the most genre in a dictionary
     :param dict_genre: a dictionary
@@ -54,6 +63,8 @@ def find_max(dict_genre):
     """
     max_genre_count = 0
     max_genre = ""
+    if not isinstance(dict_genre, dict):
+        raise Exception("not a dictionary")
     for key, value in dict_genre.items():
         if max_genre_count < value:
             max_genre_count = value
@@ -62,7 +73,7 @@ def find_max(dict_genre):
 
 
 @task
-def read_from_file(input_file):
+def read_from_file(input_file: str) -> list:
     """
     this function read the file in dictionary format and return a list of content
     :param input_file: file to be read
@@ -74,7 +85,7 @@ def read_from_file(input_file):
 
 
 @task
-def add_genre_count(reader):
+def add_genre_count(reader: List[Dict]) -> List[Dict]:
     """
     this function add the new column genre_count. also find the most genre and average
     :param reader: list of dictionary
@@ -91,9 +102,11 @@ def add_genre_count(reader):
 
 
 @task
-def write_to_file(movie_list, output_file):  # TODO change arg and comments
+def write_to_file(
+    movie_list: List[Dict], output_file: str
+) -> None:  # TODO change arg and comments
     """
-    this function write the list of dictionary to a csv file
+    this function write the list of dictionary(movie fields) to a csv file
     :param movie_list: list of dictionary
     :param output_file: file to be written
     :return: nothing

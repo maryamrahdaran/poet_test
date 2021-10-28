@@ -44,12 +44,6 @@ def test_write_csv(mock_header, mock_row):
         # print(r.read())
 
 
-def test_read_from_file():
-    with patch("test100.main.open") as mocked_open:
-        mocked_open.return_value = StringIO("col1\n" "1\n")
-        assert main.read_from_file.run("t") == [{"col1": "1"}]
-
-
 """
 def test_read_from_file2(mocker):
     mocked_open = mocker.patch.object(test100.main, "open")
@@ -123,6 +117,16 @@ def test_genre_count(genre, expected):
     assert result == expected
 
 
+def test_genre_count_exception():
+    """
+    test if the exception is raised for genre_count when the list is empty
+    :param:
+    :return:
+    """
+    with pytest.raises(Exception):
+        assert main.genre_count("")
+
+
 @pytest.mark.parametrize(
     "movie_list, expected",
     [
@@ -169,11 +173,24 @@ def test_make_genre_dict(movie_list, expected):
     assert main.make_genre_dict(movie_list) == expected
 
 
+def test_make_genre_dict_exception():
+    """
+    test if the exception is raised for make_genre_dict when the list is empty, the list doesn't have genres key
+    :param:
+    :return:
+    """
+    with pytest.raises(Exception):
+        assert main.make_genre_dict([])
+        assert main.make_genre_dict(["test"])
+        assert main.make_genre_dict([{"g: a|b"}])
+
+
 @pytest.mark.parametrize(
     "dict_genre, expected",
     [
         ({"action": 10, "drama": 2}, ("action", 10)),
         ({"action": 10, "drama": 2, "comedy": 10}, ("action", 10)),
+        ({}, ("", 0)),
     ],
 )
 def test_find_max(dict_genre, expected):
@@ -185,6 +202,17 @@ def test_find_max(dict_genre, expected):
     """
     result = main.find_max(dict_genre)
     assert result == expected
+
+
+def test_find_max_exception():
+    """
+    test if the exception is raised for find_max when the argument that is passed is not a dictionary
+    :param:
+    :return:
+    """
+    with pytest.raises(Exception):
+        assert main.find_max("")
+        assert main.find_max()
 
 
 @pytest.mark.parametrize(
@@ -205,8 +233,22 @@ def test_find_max(dict_genre, expected):
 def test_add_genre_count(movie_list, expected):
     """
     test add genre_count
-    :param movie_list: a dictionary
+    :param movie_list: a list of dictionary
     :param expected: expected results which the genre_count is added
     :return:
     """
     assert main.add_genre_count.run(movie_list) == expected
+
+
+def test_add_genre_count_exception():
+    """
+    test if the exception is raised for add_genre_count when the argument that is passed is not a list, doesn't contain
+     a dictionary od the dictiory is empty ot doesn't inclde th genres as a key
+    :param:
+    :return:
+    """
+    with pytest.raises(Exception):
+        assert main.add_genre_count.run()
+        assert main.add_genre_count.run([{}])
+        assert main.add_genre_count.run([{"genres": ""}])
+        assert main.add_genre_count.run([{"g": ""}])
